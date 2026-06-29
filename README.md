@@ -53,6 +53,92 @@ La pantalla inicial usa usuario y contraseña sencillos:
 
 > Nota técnica: Firebase Auth se usa para abrir una sesión anónima y Firestore almacena el perfil familiar con el usuario y un hash de contraseña. Esto permite usar usuario `admin` / contraseña `admin`, algo que Firebase Email/Password no permite directamente porque exige emails y contraseñas de al menos 6 caracteres.
 
+
+## Configurar usuarios en Firebase
+
+Para que el login y el registro funcionen necesitas configurar **dos cosas** en Firebase: Authentication y Firestore.
+
+### 1. Authentication
+
+1. Entra en Firebase Console.
+2. Abre tu proyecto.
+3. Ve a **Build > Authentication**.
+4. Pulsa **Get started** si es la primera vez.
+5. En **Sign-in method**, activa **Anonymous / Anónimo**.
+
+La app usa Firebase Auth anónimo como sesión técnica y guarda el usuario familiar en Firestore. Por eso, si no activas Anonymous, al pulsar **Entrar** o **Registrarme** verás un error.
+
+### 2. Firestore Database
+
+1. Ve a **Build > Firestore Database**.
+2. Pulsa **Create database**.
+3. Elige una región, por ejemplo Europa si está disponible.
+4. Para desarrollo puedes empezar en test mode, pero luego despliega `firestore.rules`.
+
+### 3. Variables `.env`
+
+En Firebase, abre **Project settings > General > Your apps** y copia la configuración de tu app web en el archivo `.env`:
+
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
+
+Después para el servidor y vuelve a arrancarlo:
+
+```bash
+npm run dev
+```
+
+### 4. Crear usuarios
+
+No tienes que crear los usuarios familiares a mano en Firebase:
+
+- El admin entra con usuario `admin` y contraseña `admin`.
+- Cada familiar pulsa **Registrarme**.
+- Al registrarse, la app crea automáticamente un documento en Firestore: `users/{uid}`.
+- En ese documento se guardan `username`, `name`, `role`, `teamId`, `money`, `copitaCount`, `seasonPoints`, `totalPoints` y `passwordHash`.
+
+### 5. Comprobar que se guardó
+
+Después de registrar un usuario:
+
+1. Ve a **Firestore Database > Data**.
+2. Abre la colección `users`.
+3. Deberías ver un documento con el perfil registrado.
+
+Si ves el error “Firebase no está listo”, normalmente falta una de estas cosas:
+
+- No copiaste las claves de Firebase al `.env`.
+- No reiniciaste `npm run dev` después de editar `.env`.
+- No activaste **Authentication > Anonymous**.
+- No creaste **Firestore Database**.
+- No desplegaste o ajustaste las reglas de Firestore.
+
+
+## Dónde se guardan usuarios, quinielas y puntos
+
+La app ya no depende de una lista fija de usuarios en el código para funcionar con Firebase:
+
+- Los usuarios registrados se leen de Firestore en la colección `users`.
+- Cuando un familiar se registra desde la web, se crea o actualiza `users/{uid}` y queda guardado para siguientes sesiones.
+- Las jornadas se leen de `rounds`.
+- Los partidos de una jornada se leen de `rounds/{roundId}/matches`.
+- Las quinielas enviadas se leen y guardan en `rounds/{roundId}/predictions`.
+
+En el panel de administrador ahora hay secciones para:
+
+1. Ver las jornadas creadas y seleccionar una.
+2. Editar la jornada activa, el Pleno y su estado.
+3. Introducir resultados reales de los 14 partidos.
+4. Ver usuarios registrados.
+5. Ver todas las quinielas enviadas para la jornada seleccionada.
+6. Recalcular y guardar puntos en los documentos de usuario.
+
 ## Crear y configurar Firebase paso a paso
 
 ### 1. Crear proyecto
