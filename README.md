@@ -121,6 +121,26 @@ Si ves el error “Firebase no está listo”, normalmente falta una de estas co
 
 
 
+
+## Importante: partidos dentro de cada jornada
+
+Cada jornada guarda sus partidos como subcolección en Firestore:
+
+```text
+rounds/{roundId}/matches/{matchId}
+```
+
+Por ejemplo:
+
+```text
+rounds/round-1/matches/m1
+rounds/round-1/matches/m2
+...
+rounds/round-1/matches/m14
+```
+
+En el panel admin, al pulsar **Guardar jornada y partidos**, la app guarda el documento de la jornada en `rounds/{roundId}` y también guarda todos sus partidos en `rounds/{roundId}/matches`. Si solo ves el documento `round-1` en Firebase, despliega/carga la subcolección `matches` dentro de ese documento.
+
 ## Error: “Has entrado, pero no se pudo guardar el perfil”
 
 Ese mensaje significa que **Firebase Auth sí ha iniciado sesión**, pero **Firestore ha rechazado o no ha podido guardar** el documento del usuario en `users/{uid}`. Revisa esto en orden:

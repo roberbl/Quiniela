@@ -132,7 +132,11 @@ export default function App() {
     try { await savePrediction(round.id, activeUser.id, data); } catch {}
     setMessage('Quiniela guardada correctamente');
   }
-  async function saveRound() { await upsertRound(round); setMessage('Jornada guardada'); }
+  async function saveRound() {
+    await upsertRound(round);
+    await Promise.all(matches.map((match) => upsertMatch(round.id, match)));
+    setMessage('Jornada y partidos guardados');
+  }
   async function saveMatch(m) { await upsertMatch(round.id, m); setMessage('Partido guardado'); }
   async function saveAllResults() {
     await upsertRound({ ...round, status: 'closed' });
